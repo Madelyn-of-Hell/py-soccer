@@ -6,4 +6,6 @@ Robots will run on one of a series of strategic protocols designed for specific 
 
 > Interference - The robot determines the position of the ball, as well as both enemies. The robot attempts to collide with the nearest robot to the ball.
 
-> Defence - The robot determines the position of the friendly goal and the ball. The robot places itself between the ball and the goal and advances towards the ball if possible
+> Defence - The robot determines the position of the friendly goal and the ball. The robot places itself between the ball and the goal and advances towards the ball if possible.
+
+> Default/Init - The robot chooses which mode to initialise in. it considers first if its teammate has already made a decision, then if it has a clear line of attack, then who is in possession of the ball, then makes a decision.
