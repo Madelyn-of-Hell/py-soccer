@@ -4,4 +4,7 @@
 
 - [ ] Create protocol selector diagram
 
-- [ ] Create protocol diagrams (elaborate when on computer)
+- [ ] Create Attack protocol diagrams
+- [ ] Create Defence protocol diagrams
+- [ ] Create Interference protocol diagrams
+- [ ] Create Init protocol diagrams
