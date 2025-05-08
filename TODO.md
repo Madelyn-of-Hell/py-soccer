@@ -2,7 +2,7 @@ organisation
 
 - [ ] Create Attack protocol diagrams
 - [ ] Create Defence protocol diagrams
-- [ ] Create Interference protocol diagrams
+- [x] [Create Interference protocol diagrams](Diagrams/Interference_diagram.pdf)
 - [ ] Create Init protocol diagrams
 - [ ] Create protocol selector diagram
 
@@ -20,3 +20,5 @@ coding
 - [ ] Code for communication between robots
 
 - [ ] Have communication update robot strategies
+
+- [ ] Implement rotation/distance ball tracking
