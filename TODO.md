@@ -8,3 +8,6 @@
 - [ ] Create Defence protocol diagrams
 - [ ] Create Interference protocol diagrams
 - [ ] Create Init protocol diagrams
+- [ ] Set up camera
+- [ ] Allow for communication between robots
+- [ ] Have communication update robot strategies
