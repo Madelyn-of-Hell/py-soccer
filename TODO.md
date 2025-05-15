@@ -1,7 +1,7 @@
 organisation
 
-- [x] Create Init protocol diagrams
-  - [x] Create Attack protocol diagrams
+- [x] [Create Init protocol diagrams]([Initialisation_diagram.pdf](Diagrams/Initialisation_diagram.pdf))
+  - [x] [Create Protocol Selector protocol diagrams](Diagrams/protocol_selector_diagram.pdf)
   - [x] Create Defence protocol diagrams
   - [x] [Create Interference protocol diagrams](Diagrams/Interference_diagram.pdf)
 
