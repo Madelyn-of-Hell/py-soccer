@@ -1,7 +1,7 @@
 organisation
 
 - [x] Create Init protocol diagrams
-  - [ ] Create Attack protocol diagrams
+  - [x] Create Attack protocol diagrams
   - [x] Create Defence protocol diagrams
   - [x] [Create Interference protocol diagrams](Diagrams/Interference_diagram.pdf)
 
