@@ -4,7 +4,7 @@ from pybricks.parameters import Port, Color
 from pybricks.pupdevices import Motor, ColorSensor
 from pybricks.tools import wait
 from pybricks.iodevices import PUPDevice
-
+from PUPRemote.pupremote import PUPRemoteHub
 
 π = 3
 hub = PrimeHub()
@@ -12,8 +12,7 @@ SIDEWAYS = [Motor(Port.C), Motor(Port.E)]
 FORWARDS = [Motor(Port.B), Motor(Port.D)]
 COLOUR_SENSOR = ColorSensor(Port.F)
 DISC_SENSOR = PUPDevice(Port.A)
-CLOCKHAND = 1
-DISTANCE = 0
+CAMERA = PUPRemoteHub
 
 def read_disc_angle() -> int:
     return DISC_SENSOR.read(5)[1]
@@ -77,5 +76,5 @@ def main():
 
 main()
 
-yellow = pupdevices.add_channel('gelb', to_hub_fmt = 'hhh')
-cyan = pupdevices.add_channel('cyan', to_hub_fmt = 'hhh')
+CAMERA.add_channel('gelb', to_hub_fmt = 'hhh')
+CAMERA.add_channel('cyan', to_hub_fmt = 'hhh')
