@@ -6,14 +6,15 @@ from pybricks.tools import wait
 from pybricks.iodevices import PUPDevice
 from PUPRemote.pupremote import PUPRemoteHub
 
-π = 3
-hub = PrimeHub()
 SIDEWAYS = [Motor(Port.C), Motor(Port.E)]
 FORWARDS = [Motor(Port.B), Motor(Port.D)]
 COLOUR_SENSOR = ColorSensor(Port.F)
 DISC_SENSOR = PUPDevice(Port.A)
-CAMERA = PUPRemoteHub
+CAMERA = PUPRemoteHub(Port.A)
+hub = PrimeHub()
+π = 3
 
+DISTANCE_THRESHOLD = 0
 def read_disc_angle() -> int:
     return DISC_SENSOR.read(5)[1]
 
@@ -28,51 +29,37 @@ def angle_to_movement_pair(angle: int) -> tuple[float, float]:
     vertical_speed = vertical_values[int(angle)]
     # horizontal_speed = sin(angle*π/180)
     # vertical_speed = cos(angle*π/180)
-    return (horizontal_speed, vertical_speed)
+    return horizontal_speed, vertical_speed
 
-def move_vec(vec:tuple[float, float]):
-    SIDEWAYS[0].run(int(SPEED * -vec[0]))
-    SIDEWAYS[1].run(int(SPEED * vec[0]))
-    FORWARDS[0].run(int(SPEED * -vec[1]))
-    FORWARDS[1].run(int(SPEED * vec[1]))
+def move_vec(vec:tuple[float, float], rotation:int):
+    SIDEWAYS[0].run( int( SPEED * -vec[0] ) + rotation )
+    SIDEWAYS[1].run( int( SPEED *  vec[0] ) + rotation )
+    FORWARDS[0].run( int( SPEED * -vec[1] ) + rotation )
+    FORWARDS[1].run( int( SPEED *  vec[1] ) + rotation )
 
-def stabilise():
-    while True:
-        yaw = hub.imu.heading()
-        if abs(yaw) < 1:
-            # print("we good")
-            SIDEWAYS[0].stop()
-            SIDEWAYS[1].stop()
-            FORWARDS[0].stop()
-            FORWARDS[1].stop()
-        else:
-            SIDEWAYS[0].run(-yaw * 2)
-            SIDEWAYS[1].run(-yaw * 2)
-            FORWARDS[0].run(-yaw * 2)
-            FORWARDS[1].run(-yaw * 2)
 def main():
-
     cycles = 0
     while True:
-        # runloop.run([stabilise])
-            cycles += 1
-            colour = cycles % 2
-            hub.light.on([Color.BLACK, Color.RED][colour])
-            # print(data)
-            direction = read_disc_angle()
-            distance = read_disc_distance()
-            # print("\n"*20)
-            # print("Angle: ", direction)
-            movement_vector = angle_to_movement_pair(direction)
-            if COLOUR_SENSOR.reflection() > 40:
-                # print("backwards")
-                correction_vector = (-movement_vector[0], -movement_vector[1])
-                move_vec(correction_vector)
-                wait(1)
-                continue
-            # print("Horizontal: ", movement_vector[0])
-            # print("Vertical: ", movement_vector[1])
-            move_vec(movement_vector)
+        cycles += 1
+        colour = cycles % 2
+        hub.light.on([Color.BLACK, Color.RED][colour])
+        # print(data)
+        direction = read_disc_angle()
+        distance = read_disc_distance()
+        yaw = hub.imu.heading()
+        movement_vector = angle_to_movement_pair(direction)
+
+        rotation_value = yaw if distance < DISTANCE_THRESHOLD else direction * 15
+        """The angle to which we want to rotate the robot. If the robot possesses the ball (assessed by distance from the ball), it wants to face forward. If not, the robot wants to face the ball. Direction is multiplied by 15 so that it operates on the same scale as yaw """
+        if COLOUR_SENSOR.reflection() > 40:
+            # print("backwards")
+            correction_vector = (-movement_vector[0], -movement_vector[1])
+            move_vec(correction_vector, rotation_value)
+            wait(1)
+            continue
+        # print("Horizontal: ", movement_vector[0])
+        # print("Vertical: ", movement_vector[1])
+        move_vec(movement_vector, rotation_value)
 
 main()
 
