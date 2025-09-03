@@ -1,4 +1,3 @@
-from pybricks import pupdevices
 from pybricks.hubs import PrimeHub
 from pybricks.parameters import Port, Color
 from pybricks.pupdevices import Motor, ColorSensor
@@ -11,12 +10,46 @@ FORWARDS = [Motor(Port.B), Motor(Port.D)]
 COLOUR_SENSOR = ColorSensor(Port.F)
 DISC_SENSOR = PUPDevice(Port.A)
 CAMERA = PUPRemoteHub(Port.A)
-hub = PrimeHub()
+
+CAMERA_CHANNEL_FORMAT:str = 'repr'
+CAMERA_BALL_COMMAND = 'ball_position'
+CAMERA_ENEMY_GOAL_COMMAND = 'enemy_goal'
+CAMERA_SELF_GOAL_COMMAND = 'self_goal'
 π = 3
+
+CAMERA.add_command(CAMERA_BALL_COMMAND, CAMERA_CHANNEL_FORMAT, CAMERA_CHANNEL_FORMAT)
+hub = PrimeHub()
 
 DISTANCE_THRESHOLD = 0
 def read_disc_angle() -> int:
     return DISC_SENSOR.read(5)[1]
+
+def get_ball_position() -> tuple[float, float]:
+    """Returns the position of the ball as a tuple of its angle and distance from the player."""
+
+    return_value:tuple[float, float] = CAMERA.call(CAMERA_BALL_COMMAND)
+
+    (angle, distance) = return_value
+
+    return angle, distance
+
+def get_own_goal_position() -> tuple[float, float]:
+    """Returns the position of the home goal as a tuple of its angle and distance from the player."""
+
+    return_value:tuple[float, float] = CAMERA.call(CAMERA_SELF_GOAL_COMMAND)
+
+    (angle, distance) = return_value
+
+    return angle, distance
+
+def get_enemy_goal_position() -> tuple[float, float]:
+    """Returns the position of the opponent's goal as a tuple of its angle and distance from the player."""
+
+    return_value:tuple[float, float] = CAMERA.call(CAMERA_ENEMY_GOAL_COMMAND)
+
+    (angle, distance) = return_value
+
+    return angle, distance
 
 def read_disc_distance() -> int:
     return DISC_SENSOR.read(5)[0]
