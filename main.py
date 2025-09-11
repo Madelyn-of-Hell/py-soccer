@@ -6,7 +6,7 @@ from pybricks.iodevices import PUPDevice
 from PUPRemote.pupremote import PUPRemoteHub
 
 SIDEWAYS = [Motor(Port.C), Motor(Port.E)]
-FORWARDS = [Motor(Port.B)]#, Motor(Port.D)] RIP PORT D
+FORWARDS = [Motor(Port.B), Motor(Port.D)] # RIP PORT D # PORT D RETURNS BABEYYYYYYYYYY
 COLOUR_SENSOR = ColorSensor(Port.F)
 DISC_SENSOR = PUPDevice(Port.A)
 CAMERA = PUPRemoteHub(Port.A)
@@ -15,7 +15,7 @@ CAMERA_CHANNEL_FORMAT:str = 'repr'
 CAMERA_BALL_COMMAND = 'ball_position'
 CAMERA_ENEMY_GOAL_COMMAND = 'enemy_goal'
 CAMERA_SELF_GOAL_COMMAND = 'self_goal'
-ROTATION_SPEED = 600
+ROTATION_SPEED = 150
 π = 3
 
 CAMERA.add_command(CAMERA_BALL_COMMAND, CAMERA_CHANNEL_FORMAT, CAMERA_CHANNEL_FORMAT)
@@ -69,7 +69,7 @@ def move_vec(vec:tuple[float, float], rotation:int):
     SIDEWAYS[0].run( int( SPEED * -vec[0] ) + rotation )
     SIDEWAYS[1].run( int( SPEED *  vec[0] ) + rotation )
     FORWARDS[0].run( int( SPEED * -vec[1] ) + rotation )
-    # FORWARDS[1].run( int( SPEED *  vec[1] ) + rotation ) RIP PORT D
+    FORWARDS[1].run( int( SPEED *  vec[1] ) + rotation ) #RIP PORT D #WOOOOOOOOO PORT D BABEYYYYYYYYYYYYYYYYY
 
 def main():
     cycles = 0
