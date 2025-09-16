@@ -1,0 +1,1 @@
+pybricksdev run ble --name "Bricked up" diagnostics.py
