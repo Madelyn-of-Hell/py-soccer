@@ -10,6 +10,7 @@ FORWARDS = [Motor(Port.B), Motor(Port.D)] # RIP PORT D # PORT D RETURNS BABEYYYY
 COLOUR_SENSOR = ColorSensor(Port.F)
 DISC_SENSOR = PUPDevice(Port.A)
 CAMERA = PUPRemoteHub(Port.A)
+HUB = PrimeHub()
 
 CAMERA_CHANNEL_FORMAT:str = 'repr'
 CAMERA_BALL_COMMAND = 'ball_position'
@@ -19,7 +20,6 @@ ROTATION_SPEED = 150
 π = 3
 
 CAMERA.add_command(CAMERA_BALL_COMMAND, CAMERA_CHANNEL_FORMAT, CAMERA_CHANNEL_FORMAT)
-hub = PrimeHub()
 
 DISTANCE_THRESHOLD = 0
 def read_disc_angle() -> int:
@@ -76,10 +76,11 @@ def main():
     while True:
         cycles += 1
         colour = cycles % 2
-        hub.light.on([Color.BLACK, Color.RED][colour])
+        HUB.light.on([Color.BLACK, Color.RED][colour])
         direction = read_disc_angle()
         distance = read_disc_distance()
-        yaw = hub.imu.heading()
+        # print("Direction: ", direction, "\tDistance: ", distance)
+        yaw = HUB.imu.heading()
         movement_vector = angle_to_movement_pair(direction)
         rotation_intensity = (12-direction) if direction > 6 else -direction
         print("rotation intensity:",rotation_intensity, "\tclock angle:", rotation_intensity)
