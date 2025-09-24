@@ -12,17 +12,32 @@ DISC_SENSOR = PUPDevice(Port.A)
 CAMERA = PUPRemoteHub(Port.A)
 HUB = PrimeHub()
 
-CAMERA_CHANNEL_FORMAT:str = 'repr'
+CAMERA_CHANNEL_FORMAT:str = 'hh'#Angle, Distance
+"""The transfer format for communication via pupremote with the camera. hh means two half-integers, 
+corresponding to the angle in degrees, and the distance from the centre."""
 CAMERA_BALL_COMMAND = 'ball_position'
+"""The name of the function on the other end of pupremote that returns the ball's position."""
 CAMERA_ENEMY_GOAL_COMMAND = 'enemy_goal'
+"""The name of the function on the other end of pupremote that returns the enemy team's goal position."""
 CAMERA_SELF_GOAL_COMMAND = 'self_goal'
+"""The name of the function on the other end of pupremote that returns the home team's goal position."""
 ROTATION_SPEED = 150
+"""A constant to be used for calibration purposes determining the speed at which the robot rotates."""
+DISTANCE_THRESHOLD = 70
+"""PROBABLY DEPRECATED LOL: a value to compare the disc sensor's ``strength`` value against. 
+Used to test whether or not the ball is close enough, but not really useful because strength is ridiculously 
+inconsistent and honestly just evil tbh this is why we need THE FUCKING 
+CAMERAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"""
 π = 3
+"""A surprise tool that's gonna help us later 😉"""
 
-CAMERA.add_command(CAMERA_BALL_COMMAND, CAMERA_CHANNEL_FORMAT, CAMERA_CHANNEL_FORMAT)
 
-DISTANCE_THRESHOLD = 0
+CAMERA.add_command('gelb', to_hub_fmt = CAMERA_CHANNEL_FORMAT)
+CAMERA.add_command('cyan', to_hub_fmt = CAMERA_CHANNEL_FORMAT)
+
+
 def read_disc_angle() -> int:
+    """Returns the infrared disc sensor's angle."""
     return DISC_SENSOR.read(5)[1]
 
 def get_ball_position() -> tuple[float, float]:
@@ -57,6 +72,8 @@ def read_disc_distance() -> int:
 
 SPEED = 500
 def angle_to_movement_pair(angle: int) -> tuple[float, float]:
+    """Converts the angle of the ball to the vector taken by ``move_vec()``. Currently a table of values due to the 30 degree increments of the disc sensor making it faster to hard code than to do sin/cos calculations on the fly lol ;-; \n
+    TODO: UPDATE THIS FOR THE CAMERA"""
     horizontal_values = [0, 0.5, 0.86, 1.0, 0.86, 0.5, 0, -0.5, -0.86, -1.0, -0.86, -0.5, -0]
     horizontal_speed = horizontal_values[int(angle)]
     vertical_values = [0, 0.86,0.5,0.6,-0.5,-0.86,-1.0,-0.86,-0.5,-0.18,0.5,0.86,1.0]
@@ -66,41 +83,50 @@ def angle_to_movement_pair(angle: int) -> tuple[float, float]:
     return horizontal_speed, vertical_speed
 
 def move_vec(vec:tuple[float, float], rotation:int):
+    """Moves the robot according to a vector ``vec`` corresponding to sides A & B of a right-angled triangle, while spinning the robot at a speed defined by ``rotation``."""
     SIDEWAYS[0].run( int( SPEED * -vec[0] ) + rotation )
     SIDEWAYS[1].run( int( SPEED *  vec[0] ) + rotation )
     FORWARDS[0].run( int( SPEED * -vec[1] ) + rotation )
     FORWARDS[1].run( int( SPEED *  vec[1] ) + rotation ) #RIP PORT D #WOOOOOOOOO PORT D BABEYYYYYYYYYYYYYYYYY
 
 def main():
+    """It's ``main()``. What do you think it does?"""
     cycles = 0
     while True:
         cycles += 1
         colour = cycles % 2
         HUB.light.on([Color.BLACK, Color.RED][colour])
         direction = read_disc_angle()
+        """The ball's angle, as a value 1-12 corresponding to a clock position."""
         distance = read_disc_distance()
+        """The ball's distance from the robot (in theory; it's basically useless but i'm keeping it here for now in case I find something to do with it."""
         # print("Direction: ", direction, "\tDistance: ", distance)
         yaw = HUB.imu.heading()
+        """The robot's yaw, when compared to its rotation at initiation."""
         movement_vector = angle_to_movement_pair(direction)
+        """omfg why are you looking at this just read what ``angle_to_movement_pair()`` does you FOOL, you MORON."""
         rotation_intensity = (12-direction) if direction > 6 else -direction
-        print("rotation intensity:",rotation_intensity, "\tclock angle:", rotation_intensity)
+        """A very clever little number that makes sure we're rotating the fastest when we're farthest away from the target rotation, and makes sure we rotate the fastest way to get there."""
+        # print("rotation intensity:",rotation_intensity, "\tclock angle:", rotation_intensity)
         rotation_value = (yaw) if (distance < DISTANCE_THRESHOLD) else ( ( rotation_intensity * ROTATION_SPEED) )
-        if distance < DISTANCE_THRESHOLD:
+        """The actual value we're going to just into ``move_vec()`` in order to rotate it. TODO: make it independent of distance because distance is stupid. Maybe check if the ball is directly ahead of us and then if so start turning back to the goal? maybe overcompensate a little bit and hope we get it right? idk seems like a decent strategy hope you get around to it future maddie baiiiiii love u <333"""
+
+######################### QUARANTINED —— EVIL BAD CODE !! DON'T TRUST DISTANCE, IT WILL COME FOR YOU #############################
+        if distance > DISTANCE_THRESHOLD: # For some reason distance increases the closer you get to the robot. I might make a wrapper to fix that at some point but for now it can be.
             print("turning to goal")
         else:
-            print("turning to ball")
-        """The angle to which we want to rotate the robot. If the robot possesses the ball (assessed by distance from the ball), it wants to face forward. If not, the robot wants to face the ball. Direction is multiplied by 15 so that it operates on the same scale as yaw """
-        if COLOUR_SENSOR.reflection() > 40:
-            # print("backwards")
+            print(f"Focusing on the ball - it's {distance} units away")
+###################################################################################################################################
+        refl = COLOUR_SENSOR.reflection()
+        """The reflectivity detected by the colour sensor tucked into the base. We use this to check for shiny tape I.E the boundaries."""
+        if  refl > 40:
+            print("REFLECTIVITY CRITICAL: ", refl)
             correction_vector = (-movement_vector[0], -movement_vector[1])
-            move_vec(correction_vector, rotation_value)
-            wait(1)
+            """The opposite of our current movement. It's not pretty, but if the ball's out of bounds it keeps us in stasis long enough that the ref should replace it and save us."""
+            move_vec(correction_vector, rotation_value) # do I need to explain?
+            wait(1) # Hold us in stasis for a bit so the ref has time to bring the ball back in bounds.
             continue
-        # print("Horizontal: ", movement_vector[0])
-        # print("Vertical: ", movement_vector[1])
-        move_vec(movement_vector, rotation_value)
+        move_vec(movement_vector, rotation_value) # You know the dealio
 
-main()
+main() #Hey fun fact! __name__ is always gonna be fucken __main__ and it would be really stupid and embarrassing to NOT KNOW THAT and accidentally LEAVE IN CODE THAT CHECKS FOR IT ANYWAYS RIGHT GUYS?? THAT WOULD BE SUPER WEIRD, HUH???!?!
 
-CAMERA.add_channel('gelb', to_hub_fmt = 'hhh')
-CAMERA.add_channel('cyan', to_hub_fmt = 'hhh')
