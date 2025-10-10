@@ -3,13 +3,13 @@ from pybricks.parameters import Port, Color
 from pybricks.pupdevices import Motor, ColorSensor
 from pybricks.tools import wait
 from pybricks.iodevices import PUPDevice
-from PUPRemote.pupremote import PUPRemoteHub
+# from PUPRemote.pupremote import PUPRemoteHub REMOVED FROM CHAMPIONSHIP VERSION
 
 SIDEWAYS = [Motor(Port.C), Motor(Port.E)]
 FORWARDS = [Motor(Port.B), Motor(Port.D)] # RIP PORT D # PORT D RETURNS BABEYYYYYYYYYY
 COLOUR_SENSOR = ColorSensor(Port.F)
 DISC_SENSOR = PUPDevice(Port.A)
-CAMERA = PUPRemoteHub(Port.A)
+# CAMERA = PUPRemoteHub(Port.A)
 HUB = PrimeHub()
 
 CAMERA_CHANNEL_FORMAT:str = 'hh'#Angle, Distance
@@ -31,41 +31,44 @@ CAMERAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"""
 π = 3
 """A surprise tool that's gonna help us later 😉"""
 
-
-CAMERA.add_command('gelb', to_hub_fmt = CAMERA_CHANNEL_FORMAT)
-CAMERA.add_command('cyan', to_hub_fmt = CAMERA_CHANNEL_FORMAT)
+# REMOVED FROM CHAMPIONSHIP EDITION
+# CAMERA.add_command('gelb', to_hub_fmt = CAMERA_CHANNEL_FORMAT)
+# CAMERA.add_command('cyan', to_hub_fmt = CAMERA_CHANNEL_FORMAT)
 
 
 def read_disc_angle() -> int:
     """Returns the infrared disc sensor's angle."""
     return DISC_SENSOR.read(5)[1]
 
-def get_ball_position() -> tuple[float, float]:
-    """Returns the position of the ball as a tuple of its angle and distance from the player."""
+#  REMOVED FROM CHAMPIONSHIP VERSION
+# def get_ball_position() -> tuple[float, float]:
+#     """Returns the position of the ball as a tuple of its angle and distance from the player."""
+#
+#     return_value:tuple[float, float] = CAMERA.call(CAMERA_BALL_COMMAND)
+#
+#     (angle, distance) = return_value
+#
+#     return angle, distance
 
-    return_value:tuple[float, float] = CAMERA.call(CAMERA_BALL_COMMAND)
+#  REMOVED FROM CHAMPIONSHIP VERSION
+# def get_own_goal_position() -> tuple[float, float]:
+#     """Returns the position of the home goal as a tuple of its angle and distance from the player."""
+#
+#     return_value:tuple[float, float] = CAMERA.call(CAMERA_SELF_GOAL_COMMAND)
+#
+#     (angle, distance) = return_value
+#
+#     return angle, distance
 
-    (angle, distance) = return_value
-
-    return angle, distance
-
-def get_own_goal_position() -> tuple[float, float]:
-    """Returns the position of the home goal as a tuple of its angle and distance from the player."""
-
-    return_value:tuple[float, float] = CAMERA.call(CAMERA_SELF_GOAL_COMMAND)
-
-    (angle, distance) = return_value
-
-    return angle, distance
-
-def get_enemy_goal_position() -> tuple[float, float]:
-    """Returns the position of the opponent's goal as a tuple of its angle and distance from the player."""
-
-    return_value:tuple[float, float] = CAMERA.call(CAMERA_ENEMY_GOAL_COMMAND)
-
-    (angle, distance) = return_value
-
-    return angle, distance
+# REMOVED FROM CHAMPIONSHIP VERSION
+# def get_enemy_goal_position() -> tuple[float, float]:
+#     """Returns the position of the opponent's goal as a tuple of its angle and distance from the player."""
+#
+#     return_value:tuple[float, float] = CAMERA.call(CAMERA_ENEMY_GOAL_COMMAND)
+#
+#     (angle, distance) = return_value
+#
+#     return angle, distance
 
 def read_disc_distance() -> int:
     return DISC_SENSOR.read(5)[0]
