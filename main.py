@@ -1,7 +1,7 @@
 from pybricks.hubs import PrimeHub
 from pybricks.parameters import Port, Color
 from pybricks.pupdevices import Motor, ColorSensor
-from pybricks.tools import wait, StopWatch
+from pybricks.tools import wait, StopWatch, multitask, run_task
 from pybricks.iodevices import PUPDevice
 # from PUPRemote.pupremote import PUPRemoteHub REMOVED FROM CHAMPIONSHIP VERSION
 
@@ -39,9 +39,19 @@ CAMERAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"""
 # CAMERA.add_command('cyan', to_hub_fmt = CAMERA_CHANNEL_FORMAT)
 
 
-def read_disc_angle() -> int:
-    """Returns the infrared disc sensor's angle."""
-    return DISC_SENSOR.read(5)[1]
+async def read_disc_angle() -> int:
+    """Reads the infrared disc sensor's angle and writes it to the shared file."""
+    # while True:
+    #     with open("disc_val_shared.dat", "w") as f:
+    #         f.write(DISC_SENSOR.read(5)[1])
+    val = await DISC_SENSOR.read(5)
+    return val[1]
+
+async def get_disc_angle() -> int:
+    """Returns the infrared disc sensor's angle, taken from the shared file."""
+    with open("disc_val_shared.dat", "r") as f:
+        return int(f.read())
+
 
 #  REMOVED FROM CHAMPIONSHIP VERSION
 # def get_ball_position() -> tuple[float, float]:
@@ -73,10 +83,10 @@ def read_disc_angle() -> int:
 #
 #     return angle, distance
 
-def read_disc_distance() -> int:
+async def read_disc_distance() -> int:
     return DISC_SENSOR.read(5)[0]
 
-def angle_to_movement_pair(angle: int) -> tuple[float, float]:
+async def angle_to_movement_pair(angle: int) -> tuple[float, float]:
     """Converts the angle of the ball to the vector taken by ``move_vec()``. Currently a table of values due to the 30 degree increments of the disc sensor making it faster to hard code than to do sin/cos calculations on the fly lol ;-; \n
     TODO: UPDATE THIS FOR THE CAMERA"""
     horizontal_values = [0, 0.5, 0.86, 1.0, 0.86, 0.5, 0, -0.5, -0.86, -1.0, -0.86, -0.5, -0]
@@ -86,15 +96,19 @@ def angle_to_movement_pair(angle: int) -> tuple[float, float]:
     # horizontal_speed = sin(angle*π/180)
     # vertical_speed = cos(angle*π/180)
     return horizontal_speed, vertical_speed
-
-def move_vec(vec:tuple[float, float], rotation:int):
+async def run_motor_wrapper(motor:Motor, val:int):
+    motor.run(val)
+async def move_vec(vec:tuple[float, float], rotation:int):
     """Moves the robot according to a vector ``vec`` corresponding to sides A & B of a right-angled triangle, while spinning the robot at a speed defined by ``rotation``."""
-    SIDEWAYS[0].run( int( SPEED * -vec[0] ) + rotation )
-    SIDEWAYS[1].run( int( SPEED *  vec[0] ) + rotation )
-    FORWARDS[0].run( int( SPEED * -vec[1] ) + rotation )
-    FORWARDS[1].run( int( SPEED *  vec[1] ) + rotation ) #RIP PORT D #WOOOOOOOOO PORT D BABEYYYYYYYYYYYYYYYYY
+    await multitask(
+        run_motor_wrapper(SIDEWAYS[0], int( SPEED * -vec[0] ) + rotation ),
+        run_motor_wrapper(SIDEWAYS[1], int( SPEED *  vec[0] ) + rotation ),
+        run_motor_wrapper(FORWARDS[0], int( SPEED * -vec[1] ) + rotation ),
+        run_motor_wrapper(FORWARDS[1], int( SPEED *  vec[1] ) + rotation ) #RIP PORT D #WOOOOOOOOO PORT D BABEYYYYYYYYYYYYYYYYY
+    )
 
-def main():
+
+async def main():
     """It's ``main()``. What do you think it does?"""
     # log_speed(HUB.light.on,Color.GREEN)
     print("cooking")
@@ -102,17 +116,17 @@ def main():
     movement_vector0 = 0 
     """The movement vector we will be comparing to to make sure we aren't updating vector for no reason"""
     while True:
-        cycles += 1
-        colour = cycles % 2
-        HUB.light.on([Color.BLACK, Color.RED][colour])
-        direction = read_disc_angle()
+        # cycles += 1
+        # colour = cycles % 2
+        # HUB.light.on([Color.BLACK, Color.RED][colour])
+        direction = await read_disc_angle()
         """The ball's angle, as a value 1-12 corresponding to a clock position."""
-        distance = read_disc_distance()
+        # distance = read_disc_distance()
         """The ball's distance from the robot (in theory; it's basically useless but i'm keeping it here for now in case I find something to do with it."""
         # print("Direction: ", direction, "\tDistance: ", distance)
         yaw = HUB.imu.heading()
         """The robot's yaw, when compared to its rotation at initiation."""
-        movement_vector = angle_to_movement_pair(direction)
+        movement_vector = await angle_to_movement_pair(direction)
         """omfg why are you looking at this just read what ``angle_to_movement_pair()`` does you FOOL, you MORON."""
         rotation_intensity = (12-direction) if direction > 6 else -direction
         """A very clever little number that makes sure we're rotating the fastest when we're farthest away from the target rotation, and makes sure we rotate the fastest way to get there."""
@@ -127,21 +141,29 @@ def main():
         # else:
         #     print(f"Focusing on the ball - it's {distance} units away")
 ###################################################################################################################################
-        refl = COLOUR_SENSOR.reflection()
+        refl = await COLOUR_SENSOR.reflection()
         """The reflectivity detected by the colour sensor tucked into the base. We use this to check for shiny tape I.E the boundaries."""
         if  refl > 40:
             print("REFLECTIVITY CRITICAL: ", refl)
             correction_vector = (-movement_vector[0], -movement_vector[1])
             """The opposite of our current movement. It's not pretty, but if the ball's out of bounds it keeps us in stasis long enough that the ref should replace it and save us."""
-            move_vec(correction_vector, rotation_value) # do I need to explain?
-            wait(1) # Hold us in stasis for a bit so the ref has time to bring the ball back in bounds.
+            await move_vec(correction_vector, rotation_value)  # do I need to explain?
+            await wait(1000)  # Hold us in stasis for a bit so the ref has time to bring the ball back in bounds.
             continue
         """Ensuring movement vector doesn't update when it doesn't have to"""
         if movement_vector0 != movement_vector:
-            move_vec(movement_vector, rotation_value) # You know the dealio 
+            await move_vec(movement_vector, rotation_value)  # You know the dealio
         movement_vector0 = movement_vector
+
+async def run():
+    await main()
 if __name__ == '__main__':
-    main()
+    # with open("disc_val_shared.dat", "w") as f: f.write("test")
+    # with open("disc_val_shared.dat", "r") as f: print(f.read())
+    print("made the file")
+    print('running')
+    run_task(run())
+    print('ran')
 # main() #Hey fun fact! __name__ is always gonna be fucken __main__ and it would be really stupid and embarrassing to NOT KNOW THAT and accidentally LEAVE IN CODE THAT CHECKS FOR IT ANYWAYS RIGHT GUYS?? THAT WOULD BE SUPER WEIRD, HUH???!?!
 # I retract my aggressive comment; there is a reason to do it now 💔
 # import random
