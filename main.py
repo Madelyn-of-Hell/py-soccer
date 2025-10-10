@@ -6,19 +6,20 @@ from pybricks.iodevices import PUPDevice
 from PUPRemote.pupremote import PUPRemoteHub
 
 SIDEWAYS = [Motor(Port.C), Motor(Port.E)]
-FORWARDS = [Motor(Port.B), Motor(Port.D)]
+FORWARDS = [Motor(Port.B), Motor(Port.D)] # RIP PORT D # PORT D RETURNS BABEYYYYYYYYYY
 COLOUR_SENSOR = ColorSensor(Port.F)
 DISC_SENSOR = PUPDevice(Port.A)
 CAMERA = PUPRemoteHub(Port.A)
+HUB = PrimeHub()
 
 CAMERA_CHANNEL_FORMAT:str = 'repr'
 CAMERA_BALL_COMMAND = 'ball_position'
 CAMERA_ENEMY_GOAL_COMMAND = 'enemy_goal'
 CAMERA_SELF_GOAL_COMMAND = 'self_goal'
+ROTATION_SPEED = 150
 π = 3
 
 CAMERA.add_command(CAMERA_BALL_COMMAND, CAMERA_CHANNEL_FORMAT, CAMERA_CHANNEL_FORMAT)
-hub = PrimeHub()
 
 DISTANCE_THRESHOLD = 0
 def read_disc_angle() -> int:
@@ -68,21 +69,26 @@ def move_vec(vec:tuple[float, float], rotation:int):
     SIDEWAYS[0].run( int( SPEED * -vec[0] ) + rotation )
     SIDEWAYS[1].run( int( SPEED *  vec[0] ) + rotation )
     FORWARDS[0].run( int( SPEED * -vec[1] ) + rotation )
-    FORWARDS[1].run( int( SPEED *  vec[1] ) + rotation )
+    FORWARDS[1].run( int( SPEED *  vec[1] ) + rotation ) #RIP PORT D #WOOOOOOOOO PORT D BABEYYYYYYYYYYYYYYYYY
 
 def main():
     cycles = 0
     while True:
         cycles += 1
         colour = cycles % 2
-        hub.light.on([Color.BLACK, Color.RED][colour])
-        # print(data)
+        HUB.light.on([Color.BLACK, Color.RED][colour])
         direction = read_disc_angle()
         distance = read_disc_distance()
-        yaw = hub.imu.heading()
+        # print("Direction: ", direction, "\tDistance: ", distance)
+        yaw = HUB.imu.heading()
         movement_vector = angle_to_movement_pair(direction)
-
-        rotation_value = yaw if distance < DISTANCE_THRESHOLD else direction * 15
+        rotation_intensity = (12-direction) if direction > 6 else -direction
+        print("rotation intensity:",rotation_intensity, "\tclock angle:", rotation_intensity)
+        rotation_value = (yaw) if (distance < DISTANCE_THRESHOLD) else ( ( rotation_intensity * ROTATION_SPEED) )
+        if distance < DISTANCE_THRESHOLD:
+            print("turning to goal")
+        else:
+            print("turning to ball")
         """The angle to which we want to rotate the robot. If the robot possesses the ball (assessed by distance from the ball), it wants to face forward. If not, the robot wants to face the ball. Direction is multiplied by 15 so that it operates on the same scale as yaw """
         if COLOUR_SENSOR.reflection() > 40:
             # print("backwards")
