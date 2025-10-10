@@ -109,6 +109,7 @@ async def move_vec(vec:tuple[float, float], rotation:int):
 
 
 async def main():
+    time_elapsed = StopWatch()
     """It's ``main()``. What do you think it does?"""
     # log_speed(HUB.light.on,Color.GREEN)
     print("cooking")
@@ -146,17 +147,21 @@ async def main():
         if  refl > 40:
             print("REFLECTIVITY CRITICAL: ", refl)
             correction_vector = (-movement_vector[0], -movement_vector[1])
+            #GoingBackwards = True
             """The opposite of our current movement. It's not pretty, but if the ball's out of bounds it keeps us in stasis long enough that the ref should replace it and save us."""
             await move_vec(correction_vector, rotation_value)  # do I need to explain?
-            await wait(1000)  # Hold us in stasis for a bit so the ref has time to bring the ball back in bounds.
+            movement_vector0 = (0,0)
+            wait(1000) # hold us in stasis for a bit so the ref has time to bring the ball back in bounds.
             continue
         """Ensuring movement vector doesn't update when it doesn't have to"""
         if movement_vector0 != movement_vector:
             await move_vec(movement_vector, rotation_value)  # You know the dealio
         movement_vector0 = movement_vector
-
 async def run():
     await main()
+
+        print(time_elapsed.time())
+        time_elapsed.reset()
 if __name__ == '__main__':
     # with open("disc_val_shared.dat", "w") as f: f.write("test")
     # with open("disc_val_shared.dat", "r") as f: print(f.read())
