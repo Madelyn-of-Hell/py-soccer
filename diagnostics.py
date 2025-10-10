@@ -30,11 +30,12 @@ def log_speed(name:str, code_snippet, *params) -> int:
 
 print("Running on "+HUB.system.info()['name'])
 battery_status:str = min(zip(["Maximum", "Ok", "Low", "Critical"],[8300, 7200, 6800, 6000]), key=lambda x: abs(x[1]-HUB.battery.voltage()))[0]
-print("Battery level is ", battery_status)
-wait(300)
+print(f"Battery level is {battery_status} ({HUB.battery.voltage()}mV)")
+wait(1000)
 time_elapsed = StopWatch()
 while True:
     print(f"TIME TAKEN TO CYCLE LOOP: {time_elapsed.time()*1000}µs")
+    print("Ground Reflectivity:", main.COLOUR_SENSOR.reflection())
     time_rdl = log_speed("read_disc_angle", main.get_disc_angle)
     time_atm = log_speed("angle_to_movement_pair", main.angle_to_movement_pair, 1)
     time_mv = log_speed("move_vec", main.move_vec, main.angle_to_movement_pair(1), 0)
