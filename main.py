@@ -95,6 +95,8 @@ def move_vec(vec:tuple[float, float], rotation:int):
 def main():
     """It's ``main()``. What do you think it does?"""
     cycles = 0
+    movement_vector0 = 0 
+    """The movement vector we will be comparing to to make sure we aren't updating vector for no reason"""
     while True:
         cycles += 1
         colour = cycles % 2
@@ -129,7 +131,11 @@ def main():
             move_vec(correction_vector, rotation_value) # do I need to explain?
             wait(1) # Hold us in stasis for a bit so the ref has time to bring the ball back in bounds.
             continue
-        move_vec(movement_vector, rotation_value) # You know the dealio
+        """Ensuring movement vector doesn't update when it doesn't have to"""
+        if movement_vector0 != movement_vector:
+            move_vec(movement_vector, rotation_value) # You know the dealio 
+        movement_vector0 = movement_vector
+    
 
 main() #Hey fun fact! __name__ is always gonna be fucken __main__ and it would be really stupid and embarrassing to NOT KNOW THAT and accidentally LEAVE IN CODE THAT CHECKS FOR IT ANYWAYS RIGHT GUYS?? THAT WOULD BE SUPER WEIRD, HUH???!?!
 
