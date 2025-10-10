@@ -1,7 +1,7 @@
 from pybricks.hubs import PrimeHub
 from pybricks.parameters import Port, Color
 from pybricks.pupdevices import Motor, ColorSensor
-from pybricks.tools import wait
+from pybricks.tools import wait, StopWatch
 from pybricks.iodevices import PUPDevice
 # from PUPRemote.pupremote import PUPRemoteHub REMOVED FROM CHAMPIONSHIP VERSION
 
@@ -12,6 +12,9 @@ DISC_SENSOR = PUPDevice(Port.A)
 # CAMERA = PUPRemoteHub(Port.A)
 HUB = PrimeHub()
 
+"""take a guess."""
+SPEED = 500
+
 CAMERA_CHANNEL_FORMAT:str = 'hh'#Angle, Distance
 """The transfer format for communication via pupremote with the camera. hh means two half-integers, 
 corresponding to the angle in degrees, and the distance from the centre."""
@@ -21,7 +24,7 @@ CAMERA_ENEMY_GOAL_COMMAND = 'enemy_goal'
 """The name of the function on the other end of pupremote that returns the enemy team's goal position."""
 CAMERA_SELF_GOAL_COMMAND = 'self_goal'
 """The name of the function on the other end of pupremote that returns the home team's goal position."""
-ROTATION_SPEED = 150
+ROTATION_SPEED = 2000
 """A constant to be used for calibration purposes determining the speed at which the robot rotates."""
 DISTANCE_THRESHOLD = 70
 """PROBABLY DEPRECATED LOL: a value to compare the disc sensor's ``strength`` value against. 
@@ -73,7 +76,6 @@ def read_disc_angle() -> int:
 def read_disc_distance() -> int:
     return DISC_SENSOR.read(5)[0]
 
-SPEED = 500
 def angle_to_movement_pair(angle: int) -> tuple[float, float]:
     """Converts the angle of the ball to the vector taken by ``move_vec()``. Currently a table of values due to the 30 degree increments of the disc sensor making it faster to hard code than to do sin/cos calculations on the fly lol ;-; \n
     TODO: UPDATE THIS FOR THE CAMERA"""
@@ -94,6 +96,8 @@ def move_vec(vec:tuple[float, float], rotation:int):
 
 def main():
     """It's ``main()``. What do you think it does?"""
+    # log_speed(HUB.light.on,Color.GREEN)
+    print("cooking")
     cycles = 0
     movement_vector0 = 0 
     """The movement vector we will be comparing to to make sure we aren't updating vector for no reason"""
@@ -113,14 +117,15 @@ def main():
         rotation_intensity = (12-direction) if direction > 6 else -direction
         """A very clever little number that makes sure we're rotating the fastest when we're farthest away from the target rotation, and makes sure we rotate the fastest way to get there."""
         # print("rotation intensity:",rotation_intensity, "\tclock angle:", rotation_intensity)
-        rotation_value = (yaw) if (distance < DISTANCE_THRESHOLD) else ( ( rotation_intensity * ROTATION_SPEED) )
+        # rotation_value = (yaw) if (distance < DISTANCE_THRESHOLD) else ( ( rotation_intensity * ROTATION_SPEED) )
+        rotation_value = yaw
         """The actual value we're going to just into ``move_vec()`` in order to rotate it. TODO: make it independent of distance because distance is stupid. Maybe check if the ball is directly ahead of us and then if so start turning back to the goal? maybe overcompensate a little bit and hope we get it right? idk seems like a decent strategy hope you get around to it future maddie baiiiiii love u <333"""
 
 ######################### QUARANTINED —— EVIL BAD CODE !! DON'T TRUST DISTANCE, IT WILL COME FOR YOU #############################
-        if distance > DISTANCE_THRESHOLD: # For some reason distance increases the closer you get to the robot. I might make a wrapper to fix that at some point but for now it can be.
-            print("turning to goal")
-        else:
-            print(f"Focusing on the ball - it's {distance} units away")
+        # if distance > DISTANCE_THRESHOLD: # For some reason distance increases the closer you get to the robot. I might make a wrapper to fix that at some point but for now it can be.
+        #     print("turning to goal")
+        # else:
+        #     print(f"Focusing on the ball - it's {distance} units away")
 ###################################################################################################################################
         refl = COLOUR_SENSOR.reflection()
         """The reflectivity detected by the colour sensor tucked into the base. We use this to check for shiny tape I.E the boundaries."""
@@ -135,7 +140,8 @@ def main():
         if movement_vector0 != movement_vector:
             move_vec(movement_vector, rotation_value) # You know the dealio 
         movement_vector0 = movement_vector
-    
-
-main() #Hey fun fact! __name__ is always gonna be fucken __main__ and it would be really stupid and embarrassing to NOT KNOW THAT and accidentally LEAVE IN CODE THAT CHECKS FOR IT ANYWAYS RIGHT GUYS?? THAT WOULD BE SUPER WEIRD, HUH???!?!
-
+if __name__ == '__main__':
+    main()
+# main() #Hey fun fact! __name__ is always gonna be fucken __main__ and it would be really stupid and embarrassing to NOT KNOW THAT and accidentally LEAVE IN CODE THAT CHECKS FOR IT ANYWAYS RIGHT GUYS?? THAT WOULD BE SUPER WEIRD, HUH???!?!
+# I retract my aggressive comment; there is a reason to do it now 💔
+# import random
