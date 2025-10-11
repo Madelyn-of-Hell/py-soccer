@@ -14,7 +14,7 @@ HUB = PrimeHub()
 
 """take a guess."""
 SPEED = 750 #1000 for attacker, 750 for defender
-TAPE_REFLECTIVITY_THRESHOLD = 15
+TAPE_REFLECTIVITY_THRESHOLD = 25 #25 for attacker, 14 for defender
 CAMERA_CHANNEL_FORMAT:str = 'hh'#Angle, Distance
 """The transfer format for communication via pupremote with the camera. hh means two half-integers, 
 corresponding to the angle in degrees, and the distance from the centre."""
