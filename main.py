@@ -24,7 +24,7 @@ CAMERA_ENEMY_GOAL_COMMAND = 'enemy_goal'
 """The name of the function on the other end of pupremote that returns the enemy team's goal position."""
 CAMERA_SELF_GOAL_COMMAND = 'self_goal'
 """The name of the function on the other end of pupremote that returns the home team's goal position."""
-ROTATION_SPEED = 3000
+ROTATION_SPEED = 10
 """A constant to be used for calibration purposes determining the speed at which the robot rotates."""
 DISTANCE_THRESHOLD = 70
 """PROBABLY DEPRECATED LOL: a value to compare the disc sensor's ``strength`` value against. 
@@ -114,7 +114,8 @@ async def main():
     # log_speed(HUB.light.on,Color.GREEN)
     print("cooking")
     cycles = 0
-    movement_vector0 = 0 
+    movement_vector_0 = 0
+    rotation_value_0 = 0
     """The movement vector we will be comparing to to make sure we aren't updating vector for no reason"""
     while True:
         # cycles += 1
@@ -133,7 +134,7 @@ async def main():
         """A very clever little number that makes sure we're rotating the fastest when we're farthest away from the target rotation, and makes sure we rotate the fastest way to get there."""
         # print("rotation intensity:",rotation_intensity, "\tclock angle:", rotation_intensity)
         # rotation_value = (yaw) if (distance < DISTANCE_THRESHOLD) else ( ( rotation_intensity * ROTATION_SPEED) )
-        rotation_value = yaw
+        rotation_value = yaw * ROTATION_SPEED
         """The actual value we're going to just into ``move_vec()`` in order to rotate it. TODO: make it independent of distance because distance is stupid. Maybe check if the ball is directly ahead of us and then if so start turning back to the goal? maybe overcompensate a little bit and hope we get it right? idk seems like a decent strategy hope you get around to it future maddie baiiiiii love u <333"""
 
 ######################### QUARANTINED —— EVIL BAD CODE !! DON'T TRUST DISTANCE, IT WILL COME FOR YOU #############################
@@ -150,13 +151,13 @@ async def main():
             #GoingBackwards = True
             """The opposite of our current movement. It's not pretty, but if the ball's out of bounds it keeps us in stasis long enough that the ref should replace it and save us."""
             await move_vec(correction_vector, rotation_value)  # do I need to explain?
-            movement_vector0 = (0,0)
+            movement_vector_0 = (0,0)
             await wait(1000) # hold us in stasis for a bit so the ref has time to bring the ball back in bounds.
             continue
         """Ensuring movement vector doesn't update when it doesn't have to"""
-        if movement_vector0 != movement_vector:
+        if movement_vector_0 != movement_vector or abs(abs(rotation_value) - abs(rotation_value_0)) > 10:
             await move_vec(movement_vector, rotation_value)  # You know the dealio
-        movement_vector0 = movement_vector
+        movement_vector_0 = movement_vector
         # print(time_elapsed.time())
         time_elapsed.reset()
 async def run():
