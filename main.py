@@ -13,8 +13,8 @@ DISC_SENSOR = PUPDevice(Port.A)
 HUB = PrimeHub()
 
 """take a guess."""
-SPEED = 500
-
+SPEED = 750 #1000 for attacker, 750 for defender
+TAPE_REFLECTIVITY_THRESHOLD = 15
 CAMERA_CHANNEL_FORMAT:str = 'hh'#Angle, Distance
 """The transfer format for communication via pupremote with the camera. hh means two half-integers, 
 corresponding to the angle in degrees, and the distance from the centre."""
@@ -24,7 +24,7 @@ CAMERA_ENEMY_GOAL_COMMAND = 'enemy_goal'
 """The name of the function on the other end of pupremote that returns the enemy team's goal position."""
 CAMERA_SELF_GOAL_COMMAND = 'self_goal'
 """The name of the function on the other end of pupremote that returns the home team's goal position."""
-ROTATION_SPEED = 2000
+ROTATION_SPEED = 3000
 """A constant to be used for calibration purposes determining the speed at which the robot rotates."""
 DISTANCE_THRESHOLD = 70
 """PROBABLY DEPRECATED LOL: a value to compare the disc sensor's ``strength`` value against. 
@@ -144,28 +144,28 @@ async def main():
 ###################################################################################################################################
         refl = await COLOUR_SENSOR.reflection()
         """The reflectivity detected by the colour sensor tucked into the base. We use this to check for shiny tape I.E the boundaries."""
-        if  refl > 40:
+        if  refl > TAPE_REFLECTIVITY_THRESHOLD:
             print("REFLECTIVITY CRITICAL: ", refl)
             correction_vector = (-movement_vector[0], -movement_vector[1])
             #GoingBackwards = True
             """The opposite of our current movement. It's not pretty, but if the ball's out of bounds it keeps us in stasis long enough that the ref should replace it and save us."""
             await move_vec(correction_vector, rotation_value)  # do I need to explain?
             movement_vector0 = (0,0)
-            wait(1000) # hold us in stasis for a bit so the ref has time to bring the ball back in bounds.
+            await wait(1000) # hold us in stasis for a bit so the ref has time to bring the ball back in bounds.
             continue
         """Ensuring movement vector doesn't update when it doesn't have to"""
         if movement_vector0 != movement_vector:
             await move_vec(movement_vector, rotation_value)  # You know the dealio
         movement_vector0 = movement_vector
+        # print(time_elapsed.time())
+        time_elapsed.reset()
 async def run():
     await main()
 
-        print(time_elapsed.time())
-        time_elapsed.reset()
 if __name__ == '__main__':
     # with open("disc_val_shared.dat", "w") as f: f.write("test")
     # with open("disc_val_shared.dat", "r") as f: print(f.read())
-    print("made the file")
+    # print("made the file")
     print('running')
     run_task(run())
     print('ran')
